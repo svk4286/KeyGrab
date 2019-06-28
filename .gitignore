@@ -1,0 +1,7 @@
+/KeyGrab
+/EWARM
+/Drivers
+/settings
+.*
+!.gitignore
+CSpyServer.log

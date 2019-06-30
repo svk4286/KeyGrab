@@ -1,7 +1,8 @@
-/KeyGrab
-/EWARM
-/Drivers
-/settings
+EWARM/
+Drivers/
+settings/
+KeyGrab/**
+!KeyGrab/KeyGrab.bin
 .*
 !.gitignore
 CSpyServer.log

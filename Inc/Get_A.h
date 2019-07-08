@@ -8,10 +8,9 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
-#include "Get_B.h"
   
 uint8_t getStream_A(uint8_t *cnt, uint8_t *n, uint32_t timeout);
-uint8_t ConvertStream_A(uint8_t *cnt, uint8_t n, Data *data, uint8_t *nbuf, uint8_t *lastbit);
-uint8_t waitRF( uint32_t timeout );
+uint8_t ConvertStream_A(uint8_t *cnt, uint8_t n, uint8_t *data, uint8_t *nbuf, uint8_t *lastbit);
+uint8_t insbit(uint8_t *buf, uint8_t *ibit, uint8_t *ibyte, uint8_t *par, uint8_t b);
 
 #endif      //__GET_A_H

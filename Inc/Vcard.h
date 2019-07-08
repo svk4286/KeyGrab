@@ -10,13 +10,20 @@ extern "C" {
 
 
 #include "stm32f1xx_hal.h"
-#include "Get_B.h"
+
+#define BUFFER_SIZE  64
+#define BUFFER_PAR   (BUFFER_SIZE/2)
 
 uint8_t VirtCard();
 void InitVirtCard();
-void conv(uint32_t *a, Data *d);
-void prndata(void);
-void vc(void);
+void conv(uint32_t *a, uint8_t *d);
+uint8_t InitPN532_2zero();
+void iso14443a_crc_append(uint8_t *pbtData, size_t szLen);
+void vc();
+void InitPN532_1();
+uint8_t InitPN532_2(uint8_t *uid, uint8_t *nuid);
+void deInitReg();
+void InitReg();
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,5 @@
 #include "Put_A.h"
 
-
 #define __OC4_FORCE_ACTIVE(__HANDLE__) \
                         do { uint16_t tmp; \
                           tmp = (__HANDLE__)->Instance->CCMR2; \
@@ -52,7 +51,7 @@ uint16_t  FWT_1 = 1236 - 8;
 #define ETU  128
 #define HALF_ETU 64
 
-#define Tout 2
+#define Tout 4
 
 #define Takt 763
 #define Takt2 423
@@ -72,77 +71,6 @@ uint16_t  FWT_1 = 1236 - 8;
 static	uint16_t fwt;
 static	uint8_t prev, mask, bit, par = 0;
 
-uint8_t PutStream_A(uint16_t *stream, uint16_t ns, uint8_t lastbit){
-
-	uint16_t i,j;
-	tickstart = uwTick;
-	prev = 1;
-	par = 0;
-	if(lastbit){
-		fwt = FWT_1;
-	}
-	else{
-		fwt = FWT_0;
-	}
-
-	__OC4_FORCE_INACTIVE(&htim1);
-	__OC4_TOGGLE(&htim1);
-	(&htim1)->Instance->CCER |= 0x1000;
-
-	htim2.Instance->CNT = 0;
-
-	if (htim1.Instance->CNT < fwt) {
-		SET_T(fwt);
-		WAIT_EVENT;
-	}
-	else
-	{
-		htim1.Instance->CNT = 0;
-		SET_T(0);
-		ADD_T( HALF_ETU );
-		WAIT_EVENT;
-	}
-
-	for( i = 0; (stream[ i ] < (Sub+5)) && (stream[ i ] > (Sub - 5)) && (i < ns); i++);
-	if( i == ns ){
-		return 0;
-	}
-	ADD_T( HALF_ETU);
-	WAIT_EVENT;
-
-	while( i < ns){
-		if((stream[i] > (Takt - 5)) && (stream[i] < (Takt + 5))){
-			ADD_T(ETU );
-			WAIT_EVENT;
-			i++;
-		}
-		else{
-			if((stream[i] > (Takt2 - 5)) || (stream[i] < (Takt2 + 5))){
-				ADD_T( HALF_ETU);
-				WAIT_EVENT;
-				i++;
-			}
-		}
-		for (j = 0;(stream[i] < (Sub + 5)) && (stream[i] > (Sub - 5)) && (i < ns);i++, j++);
-		if ((j == 3) || (j == 4)){
-			ADD_T(HALF_ETU);
-			WAIT_EVENT;
-		}
-		else {
-			if((j == 7) || (j == 8)) {
-				ADD_T( ETU );
-				WAIT_EVENT;
-			}
-		}
-	}
-
-	__OC4_FORCE_INACTIVE(&htim1);
-    __OC4_FROZEN(&htim1);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0xffff);
-
-	return 1;
-}
-
 
 uint8_t putbit(){
 
@@ -161,7 +89,7 @@ uint8_t putbit(){
 }
 
 
-uint8_t putData_A(uint8_t *buf, uint8_t nbuf, uint8_t lastbit){
+uint8_t PutData_A(uint8_t *buf, uint8_t nbuf, uint8_t lastbit){
 
 	tickstart = uwTick;
 	prev = 1;
@@ -214,4 +142,75 @@ uint8_t putData_A(uint8_t *buf, uint8_t nbuf, uint8_t lastbit){
         __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0xffff);
         return 1;
 
+}
+
+
+uint8_t PutStream_A(uint16_t *stream, uint16_t ns, uint8_t lastbit){
+
+	uint16_t i,j;
+	tickstart = uwTick;
+	prev = 1;
+	par = 0;
+//	if(lastbit){
+//		fwt = FWT_1;
+//	}
+//	else{
+//		fwt = FWT_0;
+//	}
+
+	__OC4_FORCE_INACTIVE(&htim1);
+	__OC4_TOGGLE(&htim1);
+	(&htim1)->Instance->CCER |= 0x1000;
+
+	htim2.Instance->CNT = 0;
+
+//	if (htim1.Instance->CNT < fwt) {
+//		SET_T(fwt);
+//		WAIT_EVENT;
+//	}
+//	else
+//	{
+		htim1.Instance->CNT = 0;
+		SET_T(0);
+		ADD_T( HALF_ETU );
+		WAIT_EVENT;
+//	}
+
+	for( i = 0; (stream[ i ] < (Sub+5)) && (stream[ i ] > (Sub - 5)) && (i < ns); i++);
+	if( i == ns ){
+		return 0;
+	}
+	ADD_T( HALF_ETU);
+	WAIT_EVENT;
+
+	while( i < ns){
+		if((stream[i] > (Takt - 5)) && (stream[i] < (Takt + 5))){
+			ADD_T(ETU );
+			WAIT_EVENT;
+			i++;
+		}
+		else{
+			if((stream[i] > (Takt2 - 5)) || (stream[i] < (Takt2 + 5))){
+				ADD_T( HALF_ETU);
+				WAIT_EVENT;
+				i++;
+			}
+		}
+		for (j = 0;(stream[i] < (Sub + 5)) && (stream[i] > (Sub - 5)) && (i < ns);i++, j++);
+		if ((j == 3) || (j == 4)){
+			ADD_T(HALF_ETU);
+			WAIT_EVENT;
+		}
+		else {
+			if((j == 7) || (j == 8)) {
+				ADD_T( ETU );
+				WAIT_EVENT;
+			}
+		}
+	}
+	__OC4_FORCE_INACTIVE(&htim1);
+    __OC4_FROZEN(&htim1);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0xffff);
+
+	return 1;
 }

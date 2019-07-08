@@ -6,3 +6,4 @@ KeyGrab/**
 .*
 !.gitignore
 CSpyServer.log
+/KeyGrab/

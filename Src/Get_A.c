@@ -1,10 +1,10 @@
 #include "Get_A.h"
+#include "Vcard.h"
 
 #include "Macros.h"
 
 extern TIM_HandleTypeDef htim1;
 extern __IO uint32_t uwTick;
-extern SPI_HandleTypeDef hspi1;
 
 #define TCNT htim1.Instance->CNT
 
@@ -13,14 +13,15 @@ extern SPI_HandleTypeDef hspi1;
 #define TWO 220
 #define D 20
 
-uint8_t insbit(Data *buf, uint8_t *ibit, uint8_t *ibyte, uint8_t *par, uint8_t b) {
+
+uint8_t insbit(uint8_t *buf, uint8_t *ibit, uint8_t *ibyte, uint8_t *par, uint8_t b) {
 	if ((*ibit) < 8) {
 		(*par) ^= b;
 		b <<= (*ibit)++;
-		buf->d |= b;
+		*buf |= b;
 	}
 	else {
-		buf->p = (*par)^1 + (b << 4);
+		*(buf + BUFFER_PAR) = (*par)^1 + (b << 4);
 		(*ibyte)++;
 		(*ibit) = 0;
 		(*par) = 0;
@@ -28,33 +29,6 @@ uint8_t insbit(Data *buf, uint8_t *ibit, uint8_t *ibyte, uint8_t *par, uint8_t b
 	return 1;
 }
 
-uint8_t waitRF( uint32_t timeout ){
-	uint16_t Tprev, t1;
-	uint32_t tickstart = uwTick;
-
-	TCNT = 0;
-	Tprev = TCNT;
-	while(!TCNT);
-
-	B10_STROBE;
-
-	while(1){
-		while ( ((t1 = TCNT) != Tprev) && (TCNT < 27000) && ((uwTick - tickstart) < timeout)) {
-			Tprev = TCNT;
-		}
-		if((uwTick - tickstart) > timeout){
-			return 1;
-		}
-		if( TCNT == Tprev){
-			TCNT = 0;
-			continue;
-		}
-		if( t1 > 27000 ){
-			B10_STROBE;
-			return 0;
-		}
-	}
-}
 
 uint8_t getStream_A(uint8_t *cnt, uint8_t *n, uint32_t timeout) {
 	uint16_t Tprev, t1;
@@ -90,7 +64,6 @@ uint8_t getStream_A(uint8_t *cnt, uint8_t *n, uint32_t timeout) {
 		}
 		if (TCNT != Tprev)
 			break;
-//		B10_STROBE;
 		if ((t1 > (ONE - D)) && (t1 < (ONE + D))) {
 			cnt[i++] = 1;
 		}
@@ -114,15 +87,15 @@ uint8_t getStream_A(uint8_t *cnt, uint8_t *n, uint32_t timeout) {
 }
 
 
-uint8_t ConvertStream_A(uint8_t *cnt, uint8_t n, Data *data, uint8_t *nbuf, uint8_t *lastbit) {
+uint8_t ConvertStream_A(uint8_t *cnt, uint8_t n, uint8_t *data, uint8_t *nbuf, uint8_t *lastbit) {
 
 	uint8_t prev = 0, i;
 	uint8_t ibyte = 0, ibit = 0, par = 0;
 
 	*nbuf = 20;
 	for (i = 0; i < *nbuf; i++) {
-		data[i].d = 0;
-		data[i].p = 0;
+		data[i] = 0;
+		data[i + BUFFER_PAR] = 0;
 	}
 	par = 0;
 
@@ -164,7 +137,7 @@ uint8_t ConvertStream_A(uint8_t *cnt, uint8_t n, Data *data, uint8_t *nbuf, uint
 		*nbuf = ibyte;
 		return 1;
 	}
-	if ((ibit == 7) && (ibyte == 0) && (data[0].d == 0x26)) {
+	if ((ibit == 7) && (ibyte == 0) && (data[0] == 0x26)) {
 		*nbuf = ++ibyte;
 		return 1;
 

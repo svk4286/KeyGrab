@@ -16,7 +16,7 @@ uint16_t streamB[900],nstrB;
 uint16_t streamB_1[900],nstrB_1;
 uint16_t streamNAK[] = {763,83,83,83,423,83,83,83,83,83,83,83,763,83,83,83,83}, nstrNAK = 17;
 
-uint8_t data[20][20];
+uint8_t data[20][BUFFER_SIZE];
 uint8_t ndata[20];
 uint8_t nd;
 uint8_t uid[8] = {0xEB, 0xD5, 0x2A, 0xC5},uidLength = 4,nuid;  //  UID
